@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Rotation : MonoBehaviour {
-    public float speed = 120.0f;
+    public float RotationTimeInDay = 1f;
 
 	void Update () {
-        this.transform.Rotate(Vector3.up, Time.deltaTime * speed);
-    }
+		transform.Rotate(new Vector3(0, calculateAnglePerSeconds() * Time.deltaTime, 0));
+	}
+
+	private float calculateAnglePerSeconds(){
+		return 360 / (Configs.getSecondsInGame(RotationTimeInDay));
+	}
 }

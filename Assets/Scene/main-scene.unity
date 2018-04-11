@@ -156,7 +156,8 @@ MonoBehaviour:
   FirstPersonCamera: {fileID: 1182369856}
   TrackedPlanePrefab: {fileID: 1654175882956584, guid: 6a35c744e5010405c847fad90282d2be,
     type: 2}
-  AndyAndroidPrefab: {fileID: 132870, guid: 27fe6d2a15a377f4587f716a2d37ca8a, type: 2}
+  AndyAndroidPrefab: {fileID: 1505750826454994, guid: 75aa723efc866bc4698c296c08fdc0aa,
+    type: 2}
   SearchingForPlaneUI: {fileID: 1133631540}
 --- !u!1 &1133631540
 GameObject:

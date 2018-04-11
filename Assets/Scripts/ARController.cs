@@ -117,8 +117,10 @@ public class ARController : MonoBehaviour
 			TrackableHitFlags.FeaturePointWithSurfaceNormal;
 
 		if (Frame.Raycast(touch.position.x, touch.position.y, raycastFilter, out hit)){
-			
-			EarthObject = Instantiate(AndyAndroidPrefab, hit.Pose.position, hit.Pose.rotation);
+
+			Vector3 solarSystemCenter = hit.Pose.position;
+			solarSystemCenter -= new Vector3 (-2, 0, 0);
+			EarthObject = Instantiate(AndyAndroidPrefab, solarSystemCenter, hit.Pose.rotation);
 
 			// Create an anchor to allow ARCore to track the hitpoint as understanding of the physical
 			// world evolves.
