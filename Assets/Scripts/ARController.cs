@@ -10,72 +10,35 @@ using Input = GoogleARCore.InstantPreviewInput;
 
 public class ARController : MonoBehaviour
 {
-	/// <summary>
 	/// The first-person camera being used to render the passthrough camera image (i.e. AR background).
-	/// </summary>
 	public Camera FirstPersonCamera;
 
-	/// <summary>
 	/// A prefab for tracking and visualizing detected planes.
-	/// </summary>
 	public GameObject TrackedPlanePrefab;
 
-	/// <summary>
 	/// A model to place when a raycast from a user touch hits a plane.
-	/// </summary>
-	public GameObject AndyAndroidPrefab;
+	public GameObject SolarSystemPrefab;
 
-	private GameObject EarthObject;
+	private GameObject SolarSystemObject;
 
-	/// <summary>
 	/// A gameobject parenting UI for displaying the "searching for planes" snackbar.
-	/// </summary>
 	public GameObject SearchingForPlaneUI;
 
-	/// <summary>
 	/// A list to hold new planes ARCore began tracking in the current frame. This object is used across
 	/// the application to avoid per-frame allocations.
-	/// </summary>
 	private List<TrackedPlane> m_NewPlanes = new List<TrackedPlane>();
 
-	/// <summary>
 	/// A list to hold all planes ARCore is tracking in the current frame. This object is used across
 	/// the application to avoid per-frame allocations.
-	/// </summary>
 	private List<TrackedPlane> m_AllPlanes = new List<TrackedPlane>();
 
-	/// <summary>
 	/// True if the app is in the process of quitting due to an ARCore connection error, otherwise false.
-	/// </summary>
 	private bool m_IsQuitting = false;
 
-	/// <summary>
-	/// The Unity Update() method.
-	/// </summary>
+
 	public void Update()
 	{
-		// Exit the app when the 'back' button is pressed.
-		if (Input.GetKey(KeyCode.Escape))
-		{
-			Application.Quit();
-		}
-
-		_QuitOnConnectionErrors();
-
-		// Check that motion tracking is tracking.
-		if (Session.Status != SessionStatus.Tracking)
-		{
-			const int lostTrackingSleepTimeout = 15;
-			Screen.sleepTimeout = lostTrackingSleepTimeout;
-			if (!m_IsQuitting && Session.Status.IsValid())
-			{
-				SearchingForPlaneUI.SetActive(true);
-			}
-
-			return;
-		}
-
-		Screen.sleepTimeout = SleepTimeout.NeverSleep;
+		CheckIfTrackingIsSunning ();
 
 		// Iterate over planes found in this frame and instantiate corresponding GameObjects to visualize them.
 		Session.GetTrackables<TrackedPlane>(m_NewPlanes, TrackableQueryFilter.New);
@@ -100,10 +63,9 @@ public class ARController : MonoBehaviour
 				break;
 			}
 		}
-
 		SearchingForPlaneUI.SetActive(showSearchingUI);
 
-		if (EarthObject != null)
+		if (SolarSystemObject != null)
 			return;
 
 		// If the player has not touched the screen, we are done with this update.
@@ -113,14 +75,14 @@ public class ARController : MonoBehaviour
 
 		// Raycast against the location the player touched to search for planes.
 		TrackableHit hit;
-		TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon |
-			TrackableHitFlags.FeaturePointWithSurfaceNormal;
+		TrackableHitFlags raycastFilter = TrackableHitFlags.PlaneWithinPolygon |TrackableHitFlags.FeaturePointWithSurfaceNormal;
 
 		if (Frame.Raycast(touch.position.x, touch.position.y, raycastFilter, out hit)){
 
 			Vector3 solarSystemCenter = hit.Pose.position;
-			solarSystemCenter -= new Vector3 (-2, 0, 0);
-			EarthObject = Instantiate(AndyAndroidPrefab, solarSystemCenter, hit.Pose.rotation);
+			solarSystemCenter.x -= 1;
+			
+			SolarSystemObject = Instantiate(SolarSystemPrefab, solarSystemCenter, hit.Pose.rotation);
 
 			// Create an anchor to allow ARCore to track the hitpoint as understanding of the physical
 			// world evolves.
@@ -134,11 +96,11 @@ public class ARController : MonoBehaviour
 				cameraPositionSameY.y = hit.Pose.position.y;
 
 				// Have Andy look toward the camera respecting his "up" perspective, which may be from ceiling.
-				EarthObject.transform.LookAt(cameraPositionSameY, EarthObject.transform.up);
+				SolarSystemObject.transform.LookAt(cameraPositionSameY, SolarSystemObject.transform.up);
 			}
 
 			// Make Andy model a child of the anchor.
-			EarthObject.transform.parent = anchor.transform;
+			SolarSystemObject.transform.parent = anchor.transform;
 		}
 	}
 
@@ -195,4 +157,24 @@ public class ARController : MonoBehaviour
 				}));
 		}
 	}
+
+	private void CheckIfTrackingIsSunning ()
+	{
+		// Exit the app when the 'back' button is pressed.
+		if (Input.GetKey (KeyCode.Escape)) {
+			Application.Quit ();
+		}
+		_QuitOnConnectionErrors ();
+		// Check that motion tracking is tracking.
+		if (Session.Status != SessionStatus.Tracking) {
+			const int lostTrackingSleepTimeout = 15;
+			Screen.sleepTimeout = lostTrackingSleepTimeout;
+			if (!m_IsQuitting && Session.Status.IsValid ()) {
+				SearchingForPlaneUI.SetActive (true);
+			}
+			return;
+		}
+		Screen.sleepTimeout = SleepTimeout.NeverSleep;
+	}
+
 }
